@@ -1,0 +1,5 @@
+DB_NAME=alpine
+DB_USERNAME=postgres
+DB_PASSWORD=nintendo27
+STRAPI_EMAIL=mihhha985@yandex.ru
+STRAPI_PASSWORD=nintendo27

@@ -1,0 +1,198 @@
+---
+description: Правила для вёрстки проекта
+alwaysApply: true
+---
+
+# layout.mdc
+
+## YANGI Layout Rules
+
+Главный принцип:  
+- Никакой самодеятельности.
+- Не добавлять стили, состояния и классы, которых нет в макете.
+- Не улучшать интерфейс “на будущее”.
+- Верстать только то, что явно показано в дизайне.
+
+---
+
+## Strict Visual Accuracy
+
+- Все размеры, отступы, радиусы, цвета, тени, шрифты брать из макета.
+- Если чего-то нет в макете — не добавлять.
+- Не добавлять hover / focus / disabled / active состояния без явного указания.
+- Не добавлять pointer-events, opacity, transition, ring, outline, shadow без причины.
+
+### Example
+
+// ❌ bad
+className="h-10 px-4 rounded-lg hover:bg-blue-600 disabled:opacity-50 focus:ring-2"
+
+// ✅ good
+className="w-40 h-10 rounded-lg bg-blue-500"
+
+---
+
+## Tailwind Class Order (Required)
+
+Классы писать строго в порядке:
+
+1. width / height  
+2. display  
+3. flex / grid settings  
+4. gap  
+5. positioning  
+6. spacing (только если нельзя без него)  
+7. border / radius  
+8. background / gradient  
+9. typography  
+10. effects  
+11. animation  
+12. state modifiers (только если есть в макете)
+
+### Example
+
+// ✅ good
+className="w-40 h-10 flex items-center justify-center rounded-lg bg-blue-500 text-sm font-medium"
+
+---
+
+## Layout First
+
+- Сначала строить геометрию блока.
+- Использовать:
+  - flex
+  - grid
+  - gap
+  - justify-*
+  - items-*
+  - self-*
+- Padding использовать только если без него невозможно повторить макет.
+
+### Example
+
+// ❌ bad
+className="px-6 py-3"
+
+// ✅ good
+className="w-40 h-10 flex items-center justify-center"
+
+---
+
+## Positioning
+
+Использовать только если есть в макете:
+
+- absolute
+- relative
+- top
+- left
+- right
+- bottom
+- z-index
+
+Не использовать без необходимости.
+
+---
+
+## Buttons
+
+- Не добавлять disabled стили если кнопка не disabled в макете.
+- Не добавлять hover стили если hover не описан.
+- Не добавлять cursor-pointer вручную без причины.
+- Не добавлять transition автоматически.
+
+### Example
+
+// ❌ bad
+className="cursor-pointer hover:scale-105 disabled:opacity-50"
+
+// ✅ good
+className="w-40 h-10 flex items-center justify-center bg-black text-white"
+
+---
+
+## Inputs
+
+- Только стили из макета.
+- Не добавлять focus:ring, outline-none, border-active без причины.
+
+---
+
+## Typography
+
+- Только размеры и веса из макета.
+- Не добавлять tracking, leading, uppercase без указания.
+- Все размеры для текста создавать через global.css в @layer base
+
+// ❌ bad
+< p className="text-[12px]">Text</p>
+
+// ✅ good
+<p>Text</p>
+
+@layer base {
+	p {
+		@apply text-base;
+	}
+}
+
+---
+
+## Radius / Shadow
+
+- Только если есть в дизайне.
+- Не округлять элементы “для красоты”.
+- Не добавлять shadow автоматически.
+
+---
+
+## Colors
+
+- Только цвета макета.
+- Не использовать близкие оттенки.
+- Не заменять вручную.
+
+---
+
+## Responsive
+
+- Не добавлять responsive breakpoints без требования.
+- Не выдумывать mobile/tablet версии.
+
+---
+
+## Forbidden Auto Creativity
+
+Запрещено добавлять без запроса:
+
+- hover:
+- focus:
+- active:
+- disabled:
+- pointer-events-none
+- transition
+- duration-*
+- ease-*
+- scale-*
+- shadow-*
+- ring-*
+- backdrop-blur
+- opacity changes
+- translate effects
+
+---
+
+## If Design Is Missing Something
+
+Если в макете нет состояния или значения:
+
+- использовать самое нейтральное решение
+- не фантазировать
+- не улучшать UX самостоятельно
+
+---
+
+## Golden Rule
+
+Сначала повторить макет.  
+Потом только выполнять дополнительные указания.
