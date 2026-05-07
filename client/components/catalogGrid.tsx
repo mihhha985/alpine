@@ -15,17 +15,11 @@ export function CatalogGridSection({ products }: { products: Product[] }) {
 
   return (
     <section className="section w-full">
-      <div className="section-layout">
+      <div className="section-layout pb-10">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
           {products.map((product) => (
             <ProductCard key={product.documentId} product={product} />
           ))}
-        </div>
-
-        <div className="flex w-full flex-col items-center my-10">
-          <Button variant="outline">
-            Посмотреть подборку
-          </Button>
         </div>
       </div>
     </section>

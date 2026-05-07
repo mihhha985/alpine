@@ -49,6 +49,27 @@ export interface ProductQueryResponse {
 	products: Product[];
 }
 
+/** Метаданные пагинации Strapi GraphQL (products_connection.pageInfo) */
+export interface CatalogPageInfo {
+	page: number;
+	pageSize: number;
+	pageCount: number;
+	total: number;
+}
+
+export interface CatalogProductsConnectionResponse {
+	products_connection: {
+		nodes: Product[];
+		pageInfo: CatalogPageInfo;
+	};
+}
+
+/** Результат загрузки страницы каталога */
+export type CatalogProductsPage = {
+	products: Product[];
+	pageInfo: CatalogPageInfo;
+};
+
 export interface ProductBySlug extends Product {
 	Description: string;
 	sizes: Size[];

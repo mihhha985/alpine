@@ -3,9 +3,7 @@ import Link from "next/link";
 import { Heart } from "lucide-react";
 import {BADGES} from "@/entities/domain";
 import type { Product } from "@/entities/domain";
-
-const CARD_IMAGE_BLUR =
-	"data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCwAA8A/9k=";
+import defaultCardPlaceholder from "@/public/default.png";
 
 export function ProductCard({product}: {product: Product}) {
   return (
@@ -18,7 +16,7 @@ export function ProductCard({product}: {product: Product}) {
 						src={`${process.env.API_URL}${product.MainImg?.url ?? "/productWallet.png"}`}
 						alt={product.Title}
 						placeholder="blur"
-						blurDataURL={CARD_IMAGE_BLUR}
+						blurDataURL={defaultCardPlaceholder.blurDataURL}
 						quality={75}
 						fill
 						sizes="(min-width: 1024px) 271px, (min-width: 640px) 33vw, 100vw"

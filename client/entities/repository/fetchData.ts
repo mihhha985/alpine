@@ -1,16 +1,14 @@
 "use server"
 import { query } from "@/app/layout";
 import { gql } from "@apollo/client";
-import type { 
-	ProductQueryResponse, 
+import type {
+	ProductQueryResponse,
 	Product,
 	ProductBySlugQueryResponse,
-	ProductBySlug
+	ProductBySlug,
+	CatalogProductsConnectionResponse,
+	CatalogProductsPage,
 } from "@/entities/domain";
-
-function delay(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
 
 const productListFragment = gql`
   fragment CatalogProductFields on Product {
@@ -22,31 +20,47 @@ const productListFragment = gql`
       url
     }
     Badge
+    brand {
+      Title
+      Slug
+    }
   }
 `;
 
-// fetch products by category (and optionally sub_category UID)
-const PRODUCTS_BY_CATEGORY_QUERY = gql`
-  query ProductsByCategory($categoryAlias: String!, $pageSize: Int!, $page: Int!) {
-    products(
+// Relay-style connection: узлы страницы + pageInfo для пагинации
+const PRODUCTS_BY_CATEGORY_CONNECTION = gql`
+  query ProductsByCategoryConnection(
+    $categoryAlias: String!
+    $pageSize: Int!
+    $page: Int!
+  ) {
+    products_connection(
       filters: { category: { Alias: { eq: $categoryAlias } } }
       sort: ["createdAt:desc"]
       pagination: { pageSize: $pageSize, page: $page }
     ) {
-      ...CatalogProductFields
+      nodes {
+        ...CatalogProductFields
+      }
+      pageInfo {
+        page
+        pageSize
+        pageCount
+        total
+      }
     }
   }
   ${productListFragment}
 `;
 
-const PRODUCTS_BY_CATEGORY_AND_SUB_QUERY = gql`
-  query ProductsByCategoryAndSub(
+const PRODUCTS_BY_CATEGORY_AND_SUB_CONNECTION = gql`
+  query ProductsByCategoryAndSubConnection(
     $categoryAlias: String!
     $subCategoryUid: String!
     $pageSize: Int!
     $page: Int!
   ) {
-    products(
+    products_connection(
       filters: {
         category: { Alias: { eq: $categoryAlias } }
         sub_category: { UID: { eq: $subCategoryUid } }
@@ -54,7 +68,15 @@ const PRODUCTS_BY_CATEGORY_AND_SUB_QUERY = gql`
       sort: ["createdAt:desc"]
       pagination: { pageSize: $pageSize, page: $page }
     ) {
-      ...CatalogProductFields
+      nodes {
+        ...CatalogProductFields
+      }
+      pageInfo {
+        page
+        pageSize
+        pageCount
+        total
+      }
     }
   }
   ${productListFragment}
@@ -69,39 +91,47 @@ export type FetchCatalogProductsOptions = {
 
 export async function fetchCatalogProducts(
 	options: FetchCatalogProductsOptions = {},
-): Promise<Product[]> {
+): Promise<CatalogProductsPage> {
 	const categoryAlias = options.categoryAlias ?? "man";
 	const subCategoryUid = options.subCategoryUid?.trim();
 	const pageSize = options.pageSize ?? 12;
 	const page = options.page ?? 1;
 
 	if (subCategoryUid) {
-		const { data } = await query<ProductQueryResponse>({
-			query: PRODUCTS_BY_CATEGORY_AND_SUB_QUERY,
+		const { data } = await query<CatalogProductsConnectionResponse>({
+			query: PRODUCTS_BY_CATEGORY_AND_SUB_CONNECTION,
 			variables: {
 				categoryAlias,
 				subCategoryUid,
 				pageSize,
-				page
+				page,
 			},
 		});
-		if (!data) {
+		if (!data?.products_connection) {
 			throw new Error("Failed to fetch products by category and subcategory");
 		}
-		return data.products;
+		return {
+			products: data.products_connection.nodes,
+			pageInfo: data.products_connection.pageInfo,
+		};
 	}
 
-	const { data } = await query<ProductQueryResponse>({
-		query: PRODUCTS_BY_CATEGORY_QUERY,
+	const { data } = await query<CatalogProductsConnectionResponse>({
+		query: PRODUCTS_BY_CATEGORY_CONNECTION,
 		variables: {
 			categoryAlias,
 			pageSize,
-			page
+			page,
 		},
 	});
-	if (!data) throw new Error("Failed to fetch products by category");
+	if (!data?.products_connection) {
+		throw new Error("Failed to fetch products by category");
+	}
 
-	return data.products;
+	return {
+		products: data.products_connection.nodes,
+		pageInfo: data.products_connection.pageInfo,
+	};
 }
 
 //fetch all products with pagination

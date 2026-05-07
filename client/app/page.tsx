@@ -5,9 +5,21 @@ import { Suspense } from 'react'
 import { fetchCatalogProducts } from "@/entities/repository/fetchData";
 
 export default function Home() {
-  const forManproducts = fetchCatalogProducts({ categoryAlias: "man", limit: 4 });
-	const forWomanproducts = fetchCatalogProducts({ categoryAlias: "women", limit: 4 });
-	const forChildproducts = fetchCatalogProducts({ categoryAlias: "kids", limit: 4 });
+  const forManproducts = fetchCatalogProducts({
+    categoryAlias: "man",
+    pageSize: 4,
+    page: 1,
+  }).then((r) => r.products);
+	const forWomanproducts = fetchCatalogProducts({
+    categoryAlias: "women",
+    pageSize: 4,
+    page: 1,
+  }).then((r) => r.products);
+	const forChildproducts = fetchCatalogProducts({
+    categoryAlias: "kids",
+    pageSize: 4,
+    page: 1,
+  }).then((r) => r.products);
 
   return (
     <main className="flex flex-col">
