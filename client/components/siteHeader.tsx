@@ -3,12 +3,12 @@ import Link from "next/link";
 import { Heart, Menu, ShoppingCart } from "lucide-react";
 import { Logo } from "@/components/logo";
 import ModalContainer from "./modalContainer";
-import { useMadalVisible } from "@/hooks/useMadalVisible";
+import { useModalVisible } from "@/hooks/useModalVisible";
 import type { SortedCategory } from "@/entities/domain";
 
 export function SiteHeader({ categories }: { categories: SortedCategory[] }) {
   
-  const { isOpen, setIsOpen } = useMadalVisible();
+  const { isOpen, setIsOpen } = useModalVisible();
 
   return (
     <>
@@ -48,7 +48,9 @@ export function SiteHeader({ categories }: { categories: SortedCategory[] }) {
 			<ModalContainer 
 				variant="left"
 				isOpen={isOpen} 
-				close={() => setIsOpen(false)}>
+				close={() => setIsOpen(false)}
+				id="site-header-menu"
+				ariaLabel="Навигация по сайту">
 				<nav className="w-full flex flex-col gap-4" aria-label="Разделы сайта">
 					<Link
 						href="/"

@@ -24,13 +24,27 @@ type CatalogSearchParams = {
   category?: string | string[];
   sub?: string | string[];
   page?: string | string[];
+  brands?: string | string[];
+  sizes?: string | string[];
+  color?: string | string[];
+  priceFrom?: string | string[];
+  priceTo?: string | string[];
 };
 
 function firstSearchParam(
 	value: string | string[] | undefined,
 ): string | undefined {
 	if (value === undefined) return undefined;
-	return Array.isArray(value) ? value[0] : value;
+	const raw = Array.isArray(value) ? value[0] : value;
+	return raw !== undefined && raw !== "" ? raw : undefined;
+}
+
+function listSearchParam(
+	value: string | string[] | undefined,
+): string[] {
+	if (value === undefined) return [];
+	const arr = Array.isArray(value) ? value : [value];
+	return arr.filter((v) => v !== "");
 }
 
 function parsePage(raw: string | undefined): number {
@@ -38,6 +52,12 @@ function parsePage(raw: string | undefined): number {
 	const n = Number.parseInt(raw, 10);
 	if (!Number.isFinite(n) || n < 1) return 1;
 	return n;
+}
+
+function parsePrice(raw: string | undefined): number | undefined {
+	if (raw === undefined || raw === "") return undefined;
+	const n = Number(raw);
+	return Number.isFinite(n) ? n : undefined;
 }
 
 export default async function CatalogPage({
@@ -48,36 +68,48 @@ export default async function CatalogPage({
 	const params = await searchParams;
 
 	const category = firstSearchParam(params.category);
-	const sub_category = firstSearchParam(params.sub);
+	const subCategory = firstSearchParam(params.sub);
 	const page = parsePage(firstSearchParam(params.page));
+	const brandSlugs = listSearchParam(params.brands);
+	const sizeTitles = listSearchParam(params.sizes);
+	const colorHex = firstSearchParam(params.color);
+	const priceFrom = parsePrice(firstSearchParam(params.priceFrom));
+	const priceTo = parsePrice(firstSearchParam(params.priceTo));
 
-	const { products, pageInfo } = await fetchCatalogProducts({
-		...(category !== undefined ? { categoryAlias: category } : {}),
-		...(sub_category !== undefined ? { subCategoryUid: sub_category } : {}),
-		page,
-	});
+	const [
+		{ products, pageInfo },
+		categories,
+		subCategories,
+		sizes,
+		brands,
+		colors,
+	] = await Promise.all([
+		fetchCatalogProducts({
+			...(category !== undefined ? { categoryAlias: category } : {}),
+			...(subCategory !== undefined ? { subCategoryUid: subCategory } : {}),
+			...(brandSlugs.length > 0 ? { brandSlugs } : {}),
+			...(sizeTitles.length > 0 ? { sizeTitles } : {}),
+			...(colorHex !== undefined ? { colorHex } : {}),
+			...(priceFrom !== undefined ? { priceFrom } : {}),
+			...(priceTo !== undefined ? { priceTo } : {}),
+			page,
+		}),
+		sortedData(),
+		fetchSubCategories(),
+		fetchSizes(),
+		fetchBrands(),
+		fetchColors(),
+	]);
 
 	if (pageInfo.pageCount > 0 && page > pageInfo.pageCount) {
-		redirect(
-			catalogPageHref({
-				page: pageInfo.pageCount,
-				category,
-				subCategory: sub_category,
-			}),
-		);
+		redirect(catalogPageHref(params, pageInfo.pageCount));
 	}
-
-	const categories = await sortedData(); 
-	const subCategories = await fetchSubCategories();
-	const sizes = await fetchSizes();
-	const brands = await fetchBrands();
-	const colors = await fetchColors();
 
   return (
     <main className="flex flex-col pt-[40px] md:pt-[80px]">
       <CatalogToolbarSection 
 				activeCategory={category}
-				activeSubCategory={sub_category}
+				activeSubCategory={subCategory}
 				categories={categories}
 				subCategories={subCategories} 
 				sizes={sizes}
@@ -87,8 +119,7 @@ export default async function CatalogPage({
       <CatalogGridSection products={products} />
 			<PaginationSection
 				pageInfo={pageInfo}
-				category={category}
-				subCategory={sub_category}
+				searchParams={params}
 			/>
     </main>
   );

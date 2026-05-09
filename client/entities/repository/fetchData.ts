@@ -27,44 +27,14 @@ const productListFragment = gql`
   }
 `;
 
-// Relay-style connection: узлы страницы + pageInfo для пагинации
-const PRODUCTS_BY_CATEGORY_CONNECTION = gql`
-  query ProductsByCategoryConnection(
-    $categoryAlias: String!
+const CATALOG_PRODUCTS_QUERY = gql`
+  query CatalogProducts(
+    $filters: ProductFiltersInput
     $pageSize: Int!
     $page: Int!
   ) {
     products_connection(
-      filters: { category: { Alias: { eq: $categoryAlias } } }
-      sort: ["createdAt:desc"]
-      pagination: { pageSize: $pageSize, page: $page }
-    ) {
-      nodes {
-        ...CatalogProductFields
-      }
-      pageInfo {
-        page
-        pageSize
-        pageCount
-        total
-      }
-    }
-  }
-  ${productListFragment}
-`;
-
-const PRODUCTS_BY_CATEGORY_AND_SUB_CONNECTION = gql`
-  query ProductsByCategoryAndSubConnection(
-    $categoryAlias: String!
-    $subCategoryUid: String!
-    $pageSize: Int!
-    $page: Int!
-  ) {
-    products_connection(
-      filters: {
-        category: { Alias: { eq: $categoryAlias } }
-        sub_category: { UID: { eq: $subCategoryUid } }
-      }
+      filters: $filters
       sort: ["createdAt:desc"]
       pagination: { pageSize: $pageSize, page: $page }
     ) {
@@ -85,47 +55,68 @@ const PRODUCTS_BY_CATEGORY_AND_SUB_CONNECTION = gql`
 export type FetchCatalogProductsOptions = {
 	categoryAlias?: string;
 	subCategoryUid?: string;
+	brandSlugs?: string[];
+	sizeTitles?: string[];
+	colorHex?: string;
+	priceFrom?: number;
+	priceTo?: number;
 	pageSize?: number;
 	page?: number;
 };
 
+type ProductFilters = Record<string, unknown>;
+
+function buildProductFilters(opts: FetchCatalogProductsOptions): ProductFilters | undefined {
+	const filters: ProductFilters = {};
+
+	if (opts.categoryAlias) {
+		filters.category = { Alias: { eq: opts.categoryAlias } };
+	}
+	if (opts.subCategoryUid) {
+		filters.sub_category = { UID: { eq: opts.subCategoryUid } };
+	}
+	if (opts.brandSlugs && opts.brandSlugs.length > 0) {
+		filters.brand = { Slug: { in: opts.brandSlugs } };
+	}
+	if (opts.sizeTitles && opts.sizeTitles.length > 0) {
+		filters.sizes = { Title: { in: opts.sizeTitles } };
+	}
+	if (opts.colorHex) {
+		filters.colors = { HEX: { eq: opts.colorHex } };
+	}
+
+	const priceRange: Record<string, number> = {};
+	if (typeof opts.priceFrom === "number" && Number.isFinite(opts.priceFrom)) {
+		priceRange.gte = opts.priceFrom;
+	}
+	if (typeof opts.priceTo === "number" && Number.isFinite(opts.priceTo)) {
+		priceRange.lte = opts.priceTo;
+	}
+	if (Object.keys(priceRange).length > 0) {
+		filters.Price = priceRange;
+	}
+
+	return Object.keys(filters).length > 0 ? filters : undefined;
+}
+
 export async function fetchCatalogProducts(
 	options: FetchCatalogProductsOptions = {},
 ): Promise<CatalogProductsPage> {
-	const categoryAlias = options.categoryAlias ?? "man";
-	const subCategoryUid = options.subCategoryUid?.trim();
 	const pageSize = options.pageSize ?? 12;
 	const page = options.page ?? 1;
-
-	if (subCategoryUid) {
-		const { data } = await query<CatalogProductsConnectionResponse>({
-			query: PRODUCTS_BY_CATEGORY_AND_SUB_CONNECTION,
-			variables: {
-				categoryAlias,
-				subCategoryUid,
-				pageSize,
-				page,
-			},
-		});
-		if (!data?.products_connection) {
-			throw new Error("Failed to fetch products by category and subcategory");
-		}
-		return {
-			products: data.products_connection.nodes,
-			pageInfo: data.products_connection.pageInfo,
-		};
-	}
+	const filters = buildProductFilters(options);
 
 	const { data } = await query<CatalogProductsConnectionResponse>({
-		query: PRODUCTS_BY_CATEGORY_CONNECTION,
+		query: CATALOG_PRODUCTS_QUERY,
 		variables: {
-			categoryAlias,
+			filters,
 			pageSize,
 			page,
 		},
 	});
+
 	if (!data?.products_connection) {
-		throw new Error("Failed to fetch products by category");
+		throw new Error("Failed to fetch catalog products");
 	}
 
 	return {
@@ -134,7 +125,6 @@ export async function fetchCatalogProducts(
 	};
 }
 
-//fetch all products with pagination
 const ALL_PRODUCTS_QUERY = gql`
   query AllProducts($pageSize: Int!, $page: Int!) {
     products(
@@ -168,7 +158,6 @@ export const fetchAllProducts = async (pageSize: number = 12, page: number = 1):
   return data.products;
 };
 
-//fetch product by slug
 const PRODUCT_BY_SLUG_QUERY = gql`
   query ProductBySlug($documentId: ID!) {
     product(documentId: $documentId) {
@@ -197,7 +186,6 @@ const PRODUCT_BY_SLUG_QUERY = gql`
 `;
 
 export const fetchProductBySlug = async (slug: string): Promise<ProductBySlug | null> => {
-	//await delay(1000);
   const { data } = await query<ProductBySlugQueryResponse>({
     query: PRODUCT_BY_SLUG_QUERY,
     variables: {documentId: slug},

@@ -1,14 +1,17 @@
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "motion/react";
-interface modalContainerProps {
+
+interface ModalContainerProps {
 	variant: "left" | "right";
 	isOpen: boolean;
-	close: ()=>void;
+	close: () => void;
+	id?: string;
+	ariaLabel?: string;
 	children: React.ReactNode;
 }
 
-function ModalContainer({variant, isOpen, close, children}: modalContainerProps) {
+function ModalContainer({variant, isOpen, close, id, ariaLabel, children}: ModalContainerProps) {
 		return (
 			<AnimatePresence>
 				{isOpen ? (
@@ -30,8 +33,8 @@ function ModalContainer({variant, isOpen, close, children}: modalContainerProps)
 							animate={{x: 0}}
 							exit={{x: variant === "left" ? "-100%" : "100%"}}
 							transition={{duration:.6, type: "spring"}}
-							id="site-header-menu"
-							aria-label="Навигация по сайту"
+							id={id}
+							aria-label={ariaLabel}
 							className={`
 								w-[90vw] h-screen flex flex-col gap-8 px-5 py-6 bg-background md:w-[50vw] md:px-8 md:py-8 lg:w-[30vw]
 								absolute top-0 ${variant === "left" ? "left-0" : "right-0"}

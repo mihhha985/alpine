@@ -9,27 +9,33 @@ import {
 } from "@/components/ui/pagination"
 import type { CatalogPageInfo } from "@/entities/domain"
 
+export type CatalogSearchParamsLike = Record<string, string | string[] | undefined>;
+
 type PaginationSectionProps = {
 	pageInfo: CatalogPageInfo;
-	category: string | undefined;
-	subCategory: string | undefined;
+	searchParams: CatalogSearchParamsLike;
 }
 
-export function catalogPageHref(opts: {
-	page: number;
-	category: string | undefined;
-	subCategory: string | undefined;
-}): string {
+export function catalogPageHref(
+	searchParams: CatalogSearchParamsLike,
+	page: number,
+): string {
 	const sp = new URLSearchParams();
-	if (opts.category !== undefined && opts.category !== "") {
-		sp.set("category", opts.category);
+
+	for (const [key, raw] of Object.entries(searchParams)) {
+		if (raw === undefined || raw === "") continue;
+		if (key === "page") continue;
+		if (Array.isArray(raw)) {
+			for (const v of raw) {
+				if (v !== "") sp.append(key, v);
+			}
+		} else {
+			sp.set(key, raw);
+		}
 	}
-	if (opts.subCategory !== undefined && opts.subCategory !== "") {
-		sp.set("sub", opts.subCategory);
-	}
-	if (opts.page > 1) {
-		sp.set("page", String(opts.page));
-	}
+
+	if (page > 1) sp.set("page", String(page));
+
 	const qs = sp.toString();
 	return qs === "" ? "/catalog" : `/catalog?${qs}`;
 }
@@ -70,8 +76,7 @@ function paginationMarkers(currentPage: number, pageCount: number): PageMarker[]
 
 export function PaginationSection({
 	pageInfo,
-	category,
-	subCategory,
+	searchParams,
 }: PaginationSectionProps) {
 	const { page: currentPage, pageCount } = pageInfo;
 
@@ -89,11 +94,7 @@ export function PaginationSection({
 				<PaginationContent>
 					<PaginationItem>
 						<PaginationPrevious
-							href={catalogPageHref({
-								page: prevPage,
-								category,
-								subCategory,
-							})}
+							href={catalogPageHref(searchParams, prevPage)}
 						/>
 					</PaginationItem>
 					{markers.map((m, idx) =>
@@ -104,11 +105,7 @@ export function PaginationSection({
 						) : (
 							<PaginationItem key={m}>
 								<PaginationLink
-									href={catalogPageHref({
-										page: m,
-										category,
-										subCategory,
-									})}
+									href={catalogPageHref(searchParams, m)}
 									isActive={m === currentPage}
 								>
 									{m}
@@ -118,11 +115,7 @@ export function PaginationSection({
 					)}
 					<PaginationItem>
 						<PaginationNext
-							href={catalogPageHref({
-								page: nextPage,
-								category,
-								subCategory,
-							})}
+							href={catalogPageHref(searchParams, nextPage)}
 						/>
 					</PaginationItem>
 				</PaginationContent>
