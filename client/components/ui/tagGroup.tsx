@@ -14,7 +14,7 @@ import {
 import { composeRenderProps } from 'react-aria-components';
 import { twMerge } from 'tailwind-merge';
 import { tv } from 'tailwind-variants';
-import { Description, Label } from './Field';
+import { FieldDescription, FieldLabel } from './Field';
 import { focusRing } from '@/lib/focus-ring';
 
 const colors = {
@@ -90,13 +90,13 @@ export function TagGroup<T extends object>(
 ) {
   return (
     <AriaTagGroup {...props} className={twMerge('flex flex-col gap-2 font-sans', props.className)}>
-      <Label>{label}</Label>
+      <FieldLabel>{label}</FieldLabel>
       <ColorContext.Provider value={props.color || 'gray'}>
         <TagList items={items} renderEmptyState={renderEmptyState} className="flex flex-wrap gap-1">
           {children}
         </TagList>
       </ColorContext.Provider>
-      {description && <Description>{description}</Description>}
+      {description && <FieldDescription>{description}</FieldDescription>}
       {errorMessage && <Text slot="errorMessage" className="text-sm text-red-600">{errorMessage}</Text>}
     </AriaTagGroup>
   );

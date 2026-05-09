@@ -4,7 +4,7 @@ import { NewArrivalsSection } from "@/components/newArrivals";
 import {Breadcrumbs, Breadcrumb} from '@/components/ui/breadcrumb';
 import {TagGroup, Tag} from '@/components/ui/tagGroup';
 import {ColorSwatchPicker, ColorSwatchPickerItem} from '@/components/ui/colorSwatchPicker';
-import {Label} from "@/components/ui/Field";
+import {Label} from "@/components/ui/label";
 import type { Product, ProductBySlug } from "@/entities/domain";
 import { BADGES } from "@/entities/domain";
 
@@ -72,7 +72,7 @@ export function ProductPageSection({ product, recommendedProducts }: ProductPage
 
 						<div className="mt-auto">
 							<div className="w-full flex flex-col gap-[10px] md:flex-row md:items-start">
-								<Button variant="primary">Добавить в корзину</Button>
+								<Button variant="default">Добавить в корзину</Button>
 								<Button variant="outline">Избранное</Button>
 							</div>
 

@@ -4,7 +4,10 @@ import { gql } from "@apollo/client";
 import type { 
 	CategoriesQueryResponse, 
 	SubCategoriesQueryResponse,
-	SubCategory
+	SubCategory,
+	Size,
+	Brand,
+	Color,
 } from "@/entities/domain";
 
 const CATEGORIES_QUERY = gql`
@@ -43,4 +46,71 @@ export const fetchSubCategories = cache(async (): Promise<SubCategory[]> => {
   if (!data) throw new Error("Failed to fetch subcategories");
 
   return data.subCategories;
+});
+
+const SIZES_QUERY = gql`
+  query Sizes {
+    sizes {
+      Title
+    }
+  }
+`;
+
+type SizesQueryResponse = {
+  sizes: Size[];
+}
+
+export const fetchSizes = cache(async (): Promise<Size[]> => {
+  const { data } = await query<SizesQueryResponse>({
+    query: SIZES_QUERY,
+  });
+
+  if (!data) throw new Error("Failed to fetch sizes");
+
+  return data.sizes;
+});
+
+const BRANDS_QUERY = gql`
+  query Brands {
+    brands {
+      Title
+      Slug
+    }
+  }
+`;
+
+type BrandsQueryResponse = {
+  brands: Brand[];
+}
+
+export const fetchBrands = cache(async (): Promise<Brand[]> => {
+  const { data } = await query<BrandsQueryResponse>({
+    query: BRANDS_QUERY,
+  });
+
+  if (!data) throw new Error("Failed to fetch brands");
+
+  return data.brands;
+});
+
+const COLORS_QUERY = gql`
+  query Colors {
+    colors {
+      HEX
+    }
+  }
+`;
+
+type ColorsQueryResponse = {
+  colors: Color[];
+}
+
+export const fetchColors = cache(async (): Promise<Color[]> => {
+  const { data } = await query<ColorsQueryResponse>({
+    query: COLORS_QUERY,
+  });
+
+  if (!data) throw new Error("Failed to fetch colors");
+
+  return data.colors;
 });

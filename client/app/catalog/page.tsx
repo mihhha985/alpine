@@ -8,7 +8,13 @@ import {
 } from "@/components/PaginationSection";
 import { fetchCatalogProducts } from "@/entities/repository/fetchData";
 import { sortedData } from "@/entities/services/sortedData";
-import { fetchSubCategories } from "@/entities/repository/fetchCategories";
+import { 
+	fetchSubCategories,
+	fetchSizes,
+	fetchBrands,
+	fetchColors,
+} from "@/entities/repository/fetchCategories";
+
 export const metadata: Metadata = {
   title: "Каталог — Alpine",
   description: "Каталог товаров Alpine: кожаные аксессуары и изделия в монохромной эстетике.",
@@ -63,6 +69,9 @@ export default async function CatalogPage({
 
 	const categories = await sortedData(); 
 	const subCategories = await fetchSubCategories();
+	const sizes = await fetchSizes();
+	const brands = await fetchBrands();
+	const colors = await fetchColors();
 
   return (
     <main className="flex flex-col pt-[40px] md:pt-[80px]">
@@ -71,6 +80,9 @@ export default async function CatalogPage({
 				activeSubCategory={sub_category}
 				categories={categories}
 				subCategories={subCategories} 
+				sizes={sizes}
+				brands={brands}
+				colors={colors}
 			/>
       <CatalogGridSection products={products} />
 			<PaginationSection

@@ -1,18 +1,22 @@
-type Image = {
+export type Image = {
   url: string;
 }
 
-type Brand = {
+export type Brand = {
 	Title: string;
 	Slug: string;
 }
 
-type Size = {
+export type Size = {
 	Title: string;
 }
 
-type Color = {
+export type Color = {
 	HEX: string;
+}
+
+export type Sizes = {
+	Title: string;
 }
 
 export interface CategoriesQueryResponse {
