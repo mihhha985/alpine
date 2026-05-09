@@ -1,16 +1,12 @@
 "use client";
 import Link from "next/link";
-import { SearchIcon, ChevronsLeft } from "lucide-react"
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from "@/components/ui/input-group"
+import { ChevronsLeft } from "lucide-react"
 import { Button } from "@/components/ui/button";
 
 import { useModalVisible } from "@/hooks/useModalVisible";
 import ModalContainer from "./modalContainer";
 import CatalogFiltersPanel from "./catalogFiltersPanel";
+import SearchProduct from "./searchProduct";
 
 import type { 
 	SortedCategory, 
@@ -54,12 +50,7 @@ export function CatalogToolbarSection(
 							))}
 						</div>
 
-						<InputGroup className="max-w-md">
-							<InputGroupInput placeholder="Search..." />
-							<InputGroupAddon>
-								<SearchIcon />
-							</InputGroupAddon>
-						</InputGroup>	
+						<SearchProduct />
 
 					</div>
 

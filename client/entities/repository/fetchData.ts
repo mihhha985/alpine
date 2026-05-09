@@ -125,6 +125,60 @@ export async function fetchCatalogProducts(
 	};
 }
 
+const SEARCH_PRODUCTS_QUERY = gql`
+  query SearchProducts($q: String!, $pageSize: Int!, $page: Int!) {
+    products_connection(
+      filters: {
+        or: [
+          { Title: { containsi: $q } }
+          { Description: { containsi: $q } }
+        ]
+      }
+      sort: ["createdAt:desc"]
+      pagination: { pageSize: $pageSize, page: $page }
+    ) {
+      nodes {
+        ...CatalogProductFields
+      }
+      pageInfo {
+        page
+        pageSize
+        pageCount
+        total
+      }
+    }
+  }
+  ${productListFragment}
+`;
+
+export type FetchProductsBySearchOptions = {
+	pageSize?: number;
+	page?: number;
+};
+
+export async function fetchProductsBySearch(
+	searchTerm: string,
+	options: FetchProductsBySearchOptions = {},
+): Promise<CatalogProductsPage> {
+	const pageSize = options.pageSize ?? 12;
+	const page = options.page ?? 1;
+	const q = searchTerm.trim();
+
+	const { data } = await query<CatalogProductsConnectionResponse>({
+		query: SEARCH_PRODUCTS_QUERY,
+		variables: { q, pageSize, page },
+	});
+
+	if (!data?.products_connection) {
+		throw new Error("Failed to search products");
+	}
+
+	return {
+		products: data.products_connection.nodes,
+		pageInfo: data.products_connection.pageInfo,
+	};
+}
+
 const ALL_PRODUCTS_QUERY = gql`
   query AllProducts($pageSize: Int!, $page: Int!) {
     products(

@@ -6,7 +6,7 @@ import {
 	PaginationSection,
 	catalogPageHref,
 } from "@/components/PaginationSection";
-import { fetchCatalogProducts } from "@/entities/repository/fetchData";
+import { fetchCatalogProducts, fetchProductsBySearch } from "@/entities/repository/fetchData";
 import { sortedData } from "@/entities/services/sortedData";
 import { 
 	fetchSubCategories,
@@ -29,6 +29,7 @@ type CatalogSearchParams = {
   color?: string | string[];
   priceFrom?: string | string[];
   priceTo?: string | string[];
+  q?: string | string[];
 };
 
 function firstSearchParam(
@@ -67,14 +68,30 @@ export default async function CatalogPage({
 }) {
 	const params = await searchParams;
 
-	const category = firstSearchParam(params.category);
-	const subCategory = firstSearchParam(params.sub);
+	const searchQuery = firstSearchParam(params.q);
+	const isSearchMode = searchQuery !== undefined;
+
+	const category = isSearchMode ? undefined : firstSearchParam(params.category);
+	const subCategory = isSearchMode ? undefined : firstSearchParam(params.sub);
 	const page = parsePage(firstSearchParam(params.page));
-	const brandSlugs = listSearchParam(params.brands);
-	const sizeTitles = listSearchParam(params.sizes);
-	const colorHex = firstSearchParam(params.color);
-	const priceFrom = parsePrice(firstSearchParam(params.priceFrom));
-	const priceTo = parsePrice(firstSearchParam(params.priceTo));
+	const brandSlugs = isSearchMode ? [] : listSearchParam(params.brands);
+	const sizeTitles = isSearchMode ? [] : listSearchParam(params.sizes);
+	const colorHex = isSearchMode ? undefined : firstSearchParam(params.color);
+	const priceFrom = isSearchMode ? undefined : parsePrice(firstSearchParam(params.priceFrom));
+	const priceTo = isSearchMode ? undefined : parsePrice(firstSearchParam(params.priceTo));
+
+	const productsPromise = isSearchMode
+		? fetchProductsBySearch(searchQuery, { page })
+		: fetchCatalogProducts({
+				...(category !== undefined ? { categoryAlias: category } : {}),
+				...(subCategory !== undefined ? { subCategoryUid: subCategory } : {}),
+				...(brandSlugs.length > 0 ? { brandSlugs } : {}),
+				...(sizeTitles.length > 0 ? { sizeTitles } : {}),
+				...(colorHex !== undefined ? { colorHex } : {}),
+				...(priceFrom !== undefined ? { priceFrom } : {}),
+				...(priceTo !== undefined ? { priceTo } : {}),
+				page,
+			});
 
 	const [
 		{ products, pageInfo },
@@ -84,16 +101,7 @@ export default async function CatalogPage({
 		brands,
 		colors,
 	] = await Promise.all([
-		fetchCatalogProducts({
-			...(category !== undefined ? { categoryAlias: category } : {}),
-			...(subCategory !== undefined ? { subCategoryUid: subCategory } : {}),
-			...(brandSlugs.length > 0 ? { brandSlugs } : {}),
-			...(sizeTitles.length > 0 ? { sizeTitles } : {}),
-			...(colorHex !== undefined ? { colorHex } : {}),
-			...(priceFrom !== undefined ? { priceFrom } : {}),
-			...(priceTo !== undefined ? { priceTo } : {}),
-			page,
-		}),
+		productsPromise,
 		sortedData(),
 		fetchSubCategories(),
 		fetchSizes(),
