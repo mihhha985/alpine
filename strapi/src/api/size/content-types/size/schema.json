@@ -18,6 +18,9 @@
       "unique": true,
       "regex": "[0-9A-Z]*"
     },
+    "Order": {
+      "type": "integer"
+    },
     "products": {
       "type": "relation",
       "relation": "manyToMany",

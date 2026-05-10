@@ -22,14 +22,12 @@ function searchProduct(props: searchProductProps) {
 		if (e.key !== "Enter") return;
 		e.preventDefault();
 		const q = searchValue.trim();
-		if (q === "") {
-			router.push("/catalog");
-			return;
-		}
-		
 		const params = new URLSearchParams();
-		params.set("q", q);
-		router.push(`/catalog?${params.toString()}`);
+		const category = searchParams.get("category");
+		if (category) params.set("category", category);
+		if (q !== "") params.set("q", q);
+		const qs = params.toString();
+		router.push(qs ? `/catalog?${qs}` : "/catalog");
 	};
 
 	return (

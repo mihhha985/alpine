@@ -71,7 +71,7 @@ export default async function CatalogPage({
 	const searchQuery = firstSearchParam(params.q);
 	const isSearchMode = searchQuery !== undefined;
 
-	const category = isSearchMode ? undefined : firstSearchParam(params.category);
+	const category = firstSearchParam(params.category);
 	const subCategory = isSearchMode ? undefined : firstSearchParam(params.sub);
 	const page = parsePage(firstSearchParam(params.page));
 	const brandSlugs = isSearchMode ? [] : listSearchParam(params.brands);
@@ -81,7 +81,10 @@ export default async function CatalogPage({
 	const priceTo = isSearchMode ? undefined : parsePrice(firstSearchParam(params.priceTo));
 
 	const productsPromise = isSearchMode
-		? fetchProductsBySearch(searchQuery, { page })
+		? fetchProductsBySearch(searchQuery, {
+				...(category !== undefined ? { categoryAlias: category } : {}),
+				page,
+			})
 		: fetchCatalogProducts({
 				...(category !== undefined ? { categoryAlias: category } : {}),
 				...(subCategory !== undefined ? { subCategoryUid: subCategory } : {}),

@@ -125,33 +125,8 @@ export async function fetchCatalogProducts(
 	};
 }
 
-const SEARCH_PRODUCTS_QUERY = gql`
-  query SearchProducts($q: String!, $pageSize: Int!, $page: Int!) {
-    products_connection(
-      filters: {
-        or: [
-          { Title: { containsi: $q } }
-          { Description: { containsi: $q } }
-        ]
-      }
-      sort: ["createdAt:desc"]
-      pagination: { pageSize: $pageSize, page: $page }
-    ) {
-      nodes {
-        ...CatalogProductFields
-      }
-      pageInfo {
-        page
-        pageSize
-        pageCount
-        total
-      }
-    }
-  }
-  ${productListFragment}
-`;
-
 export type FetchProductsBySearchOptions = {
+	categoryAlias?: string;
 	pageSize?: number;
 	page?: number;
 };
@@ -164,9 +139,19 @@ export async function fetchProductsBySearch(
 	const page = options.page ?? 1;
 	const q = searchTerm.trim();
 
+	const filters: ProductFilters = {
+		or: [
+			{ Title: { containsi: q } },
+			{ Description: { containsi: q } },
+		],
+	};
+	if (options.categoryAlias) {
+		filters.category = { Alias: { eq: options.categoryAlias } };
+	}
+
 	const { data } = await query<CatalogProductsConnectionResponse>({
-		query: SEARCH_PRODUCTS_QUERY,
-		variables: { q, pageSize, page },
+		query: CATALOG_PRODUCTS_QUERY,
+		variables: { filters, pageSize, page },
 	});
 
 	if (!data?.products_connection) {

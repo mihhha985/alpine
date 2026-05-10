@@ -56,7 +56,7 @@ export function CatalogToolbarSection(
 
 					<div className="w-full flex items-center justify-between">
 						<div className="flex items-center gap-2">
-							{subCategories.map((category) => (
+							{activeCategory !== undefined && subCategories.map((category) => (
 								<Link 
 									key={category.UID}
 									href={`/catalog?category=${activeCategory}&sub=${category.UID}`}
