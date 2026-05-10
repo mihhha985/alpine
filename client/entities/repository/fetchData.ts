@@ -216,6 +216,7 @@ const PRODUCT_BY_SLUG_QUERY = gql`
 			}
 			sizes {
 				Title
+				Order
 			}
 			colors {
 				HEX

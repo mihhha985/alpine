@@ -9,6 +9,7 @@ export type Brand = {
 
 export type Size = {
 	Title: string;
+	Order: number;
 }
 
 export type Color = {

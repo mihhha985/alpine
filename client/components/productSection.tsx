@@ -56,9 +56,10 @@ export function ProductPageSection({ product, recommendedProducts }: ProductPage
 							color="gray"
 							label="Размеры:"
 							selectionMode="single">
-							{product.sizes && product.sizes.map(item => 
-								<Tag key={item.Title}>{item.Title}</Tag>
-							)}
+								{product.sizes &&
+									[...product.sizes]
+										.sort((a, b) => a.Order - b.Order)
+										.map(item => <Tag key={item.Title}>{item.Title}</Tag>)}
 						</TagGroup>
 
 						<div>

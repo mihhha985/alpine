@@ -8,6 +8,7 @@ type ProductPageProps = {
   params: Promise<{ slug: string }>;
 };
 
+//caching the product data for metadata generation
 const getProduct = cache(async (slug: string) => fetchProductBySlug(slug));
 
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
