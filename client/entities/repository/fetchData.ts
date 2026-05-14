@@ -221,6 +221,14 @@ const PRODUCT_BY_SLUG_QUERY = gql`
 			colors {
 				HEX
 			}
+			category {
+				Title
+				Alias
+			}
+			sub_category {
+				Title
+				UID
+			}
     }
   }
 `;

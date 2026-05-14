@@ -8,6 +8,8 @@ import {
   InMemoryCache,
 } from "@apollo/client-integration-nextjs";
 import { sortedData } from "@/entities/services/sortedData";
+import { CartProvider } from "@/hooks/useCart";
+import { FavoritesProvider } from "@/hooks/useFavorites";
 
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
@@ -67,9 +69,13 @@ export default async function RootLayout({
       className={cn("h-full", "antialiased", montserrat.variable, playfairDisplay.variable, bodoniModa.variable, "font-sans", geist.variable)}
     >
       <body>
-        <SiteHeader categories={categories} />
-        {children}
-        <SiteFooter categories={categories} />
+        <CartProvider>
+          <FavoritesProvider>
+            <SiteHeader categories={categories} />
+            {children}
+            <SiteFooter categories={categories} />
+          </FavoritesProvider>
+        </CartProvider>
       </body>
     </html>
   );

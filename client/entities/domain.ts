@@ -20,11 +20,13 @@ export type Sizes = {
 	Title: string;
 }
 
+export type Category = {
+	Title: string;
+	Alias: string;
+}
+
 export interface CategoriesQueryResponse {
-  categories: {
-    Title: string;
-    Alias: string;
-  }[];
+  categories: Category[];
 }
 
 export interface SortedCategory {
@@ -80,13 +82,52 @@ export interface ProductBySlug extends Product {
 	sizes: Size[];
 	colors: Color[];
 	Images: Image[] | null;
+	category: Category;
+	sub_category: SubCategory;
 }
 
 export interface ProductBySlugQueryResponse {
 	product: ProductBySlug | null;
 }
 
+export interface CartItem {
+	id: string;
+	documentId: string;
+	Title: string;
+	Price: string;
+	MainImg: Image | null;
+	brand: Brand;
+	Badge: string;
+	size: Size | null;
+	color: Color | null;
+	quantity: number;
+}
+
+export function makeCartItemId(
+	documentId: string,
+	size: Size | null,
+	color: Color | null,
+): string {
+	return `${documentId}__${size?.Title ?? "_"}__${color?.HEX ?? "_"}`;
+}
+
 export const BADGES = {
 	eksklyuziv: "эксклюзив",
 	novaya_kollekcziya: "новая коллекция",
 } as const;
+
+/** Пути изображений галереи: главное без дублей из Images, затем остальные из Images. */
+export function getProductGalleryImagePaths(product: ProductBySlug): string[] {
+	const seen = new Set<string>();
+	const out: string[] = [];
+	const push = (url: string | undefined) => {
+		if (!url || seen.has(url)) return;
+		seen.add(url);
+		out.push(url);
+	};
+	push(product.MainImg?.url);
+	for (const img of product.Images ?? []) {
+		push(img.url);
+	}
+	return out.length > 0 ? out : ["/productWallet.png"];
+}

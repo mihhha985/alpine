@@ -3,17 +3,25 @@ import Link from "next/link";
 import { Heart, Menu, ShoppingCart } from "lucide-react";
 import { Logo } from "@/components/logo";
 import ModalContainer from "./modalContainer";
+import { FavoritesSheet } from "@/components/favoritesSheet";
 import { useModalVisible } from "@/hooks/useModalVisible";
+import { useCart } from "@/hooks/useCart";
+import { useFavorites } from "@/hooks/useFavorites";
 import type { SortedCategory } from "@/entities/domain";
 
 export function SiteHeader({ categories }: { categories: SortedCategory[] }) {
-  
   const { isOpen, setIsOpen } = useModalVisible();
+	const { totalQuantity } = useCart();
+	const {
+		open: openFavorites,
+		totalQuantity: favoritesQuantity,
+		isOpen: isFavoritesOpen,
+	} = useFavorites();
 
   return (
     <>
       <header className={`fixed top-0 left-0 z-20 flex h-[40px] w-full items-center md:h-[80px]
-      ${isOpen ? "" : "backdrop-blur-xl"}`}>
+      ${isOpen || isFavoritesOpen ? "" : "backdrop-blur-xl"}`}>
       <div className="section-layout flex w-full items-center justify-between">
         <button
           type="button"
@@ -29,18 +37,27 @@ export function SiteHeader({ categories }: { categories: SortedCategory[] }) {
         <Logo />
 
         <nav className="flex items-center gap-4 md:gap-8 lg:gap-10" aria-label="Пользовательские действия">
-          <Link
-            href="/favorites"
+          <button
+            type="button"
             aria-label="Избранное"
-            className="relative hidden items-center md:inline-flex"
+            aria-expanded={isFavoritesOpen}
+            onClick={openFavorites}
+            className="inline-flex items-center relative"
           >
             <Heart className="menu-icon-size" strokeWidth={1.5} />
-            <span className="absolute -right-0.5 bottom-0 inline-flex size-[16px] items-center justify-center rounded-full bg-foreground font-sans font-medium text-background lg:size-[18px]">
-              1
-            </span>
-          </Link>
-          <Link href="/cart" aria-label="Корзина" className="inline-flex items-center">
+						{favoritesQuantity > 0 && (
+							<div className="cart-icon-count">
+								<span>{favoritesQuantity}</span>
+							</div>
+						)}
+          </button>
+          <Link href="/cart" aria-label="Корзина" className="inline-flex items-center relative">
             <ShoppingCart className="menu-icon-size" strokeWidth={1.5} />
+						{totalQuantity > 0 && (
+							<div className="cart-icon-count">
+								<span className="relative left-px top-px">{totalQuantity}</span>
+							</div>
+						)}
           </Link>
         </nav>
       </div>
@@ -71,6 +88,7 @@ export function SiteHeader({ categories }: { categories: SortedCategory[] }) {
 					))}
 				</nav>
 			</ModalContainer>
+			<FavoritesSheet />
     </>
   );
 }
